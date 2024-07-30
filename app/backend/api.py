@@ -2,18 +2,11 @@
 from flask import Flask, jsonify, Blueprint, make_response
 import requests
 
-import sys
-import os
-
-# Agregar la ruta del directorio raíz del proyecto al sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 # Other classes
-from helpers.logger import log_messages
+from helpers.logger import *
 
 
 api = Blueprint('api', __name__)
-
 
 # The API Requets URL for "SpaceX API"
 API_requests = "https://api.spacexdata.com/v4/" 
@@ -78,4 +71,13 @@ def get_launches():
     """
     logger.info("Accessed /launches endpoint")
     data, status_code = get_data("launches")
+    return make_response(jsonify(data), status_code)
+
+@api.route('starlink', methods=["GET"])
+def get_starlink():
+    """
+    Function to get all the starlink satellities
+    """
+    logger.info("Accessed /starlink endpoint")
+    data, status_code = get_data("starlink")
     return make_response(jsonify(data), status_code)

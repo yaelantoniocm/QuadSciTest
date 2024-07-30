@@ -4,9 +4,15 @@ from datetime import datetime
 
 
 def log_messages():
-    # We create the folder log if 
-    log_dir = 'log'
-
+    # Get the current dirtectory 
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    
+    # Go up one level to get the project root directory
+    project_root = os.path.abspath(os.path.join(current_directory, '..'))
+    
+    # We create the folder log if doesn't exists
+    log_dir = log_dir = os.path.join(project_root, 'log')
+    
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
