@@ -1,5 +1,5 @@
 # Dependencies
-from flask import Flask, jsonify, Blueprint, make_response
+from flask import Flask, jsonify, Blueprint, make_response, request
 import requests
 
 # Other classes
@@ -22,7 +22,6 @@ def get_data(endpoint: str) -> (dict, int):
         response = requests.get(url)
         # To catch an HTTPError for bad responses
         response.raise_for_status()
-        
         # To get the JSON data from the response
         data = response.json()
         logger.info(f"Successfully fetched data from {url}")
@@ -31,19 +30,19 @@ def get_data(endpoint: str) -> (dict, int):
     # Handling specific HTTP errors
     except requests.exceptions.HTTPError as http_err:
         error_message = f"HTTP error occurred: {http_err}"
-        logger.error(error_message)
+        logger.critical(error_message)
         return {"error": error_message}, response.status_code
     
     # Handling general request exceptions
     except requests.exceptions.RequestException as request_err:
         error_message = f"Request error occurred: {request_err}"
-        logger.error(error_message)
+        logger.critical(error_message)
         return {"error": error_message}, 500
     
     # Handling any other exceptions
     except Exception as e:
         error_message = f"An error occurred: {e}"
-        logger.error(error_message)  # Registrar el error en el archivo log
+        logger.critical(error_message)  # Registrar el error en el archivo log
         return {"error": error_message}, 500
     
 
@@ -53,6 +52,7 @@ def get_dashboard():
     Function to get the dashboards
     """
     logger.info("Accessed /dashboard endpoint")
+    logger.warning("Endpoint doesn't exist yet.")
     return {"message": "Dashboard endpoint not yet implemented"}, 501
 
 @api.route('rockets', methods=["GET"])
@@ -81,3 +81,13 @@ def get_starlink():
     logger.info("Accessed /starlink endpoint")
     data, status_code = get_data("starlink")
     return make_response(jsonify(data), status_code)
+
+@api.app_errorhandler(404)
+def page_not_found(e):
+    logger.error(f"Page not found: {request.url}")
+    return jsonify(error="This resource was not found"), 404
+
+@api.app_errorhandler(500)
+def internal_server_error(e):
+    logger.critical(f"Server error: {request.url} - {e}")
+    return jsonify(error="An internal server error occurred"), 500
