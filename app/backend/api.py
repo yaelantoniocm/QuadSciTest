@@ -3,7 +3,7 @@ from flask import Flask, jsonify, Blueprint, make_response, request
 import requests
 
 # Other classes
-from helpers.logger import *
+from helpers.logger import logger
 
 
 api = Blueprint('api', __name__)
@@ -11,9 +11,7 @@ api = Blueprint('api', __name__)
 # The API Requets URL for "SpaceX API"
 API_requests = "https://api.spacexdata.com/v4/" 
 
-logger = log_messages()
-
-def get_data(endpoint: str) -> (dict, int):
+def get_data(endpoint: str):
     """
     Function to get data from the API
     """
@@ -52,7 +50,7 @@ def get_dashboard():
     Function to get the dashboards
     """
     logger.info("Accessed /dashboard endpoint")
-    logger.warning("Endpoint doesn't exist yet.")
+    logger.critical("Endpoint /api/ doesn't exist yet.")
     return {"message": "Dashboard endpoint not yet implemented"}, 501
 
 @api.route('rockets', methods=["GET"])
@@ -62,7 +60,8 @@ def get_rockets():
     """
     logger.info("Accessed /rockets endpoint")
     data, status_code = get_data("rockets")
-    return make_response(jsonify(data), status_code)
+    logger.info(make_response(jsonify(data),status_code))
+    return data, status_code
     
 @api.route('launches', methods=["GET"])
 def get_launches():
@@ -71,7 +70,8 @@ def get_launches():
     """
     logger.info("Accessed /launches endpoint")
     data, status_code = get_data("launches")
-    return make_response(jsonify(data), status_code)
+    logger.info(make_response(jsonify(data),status_code))
+    return data, status_code
 
 @api.route('starlink', methods=["GET"])
 def get_starlink():
@@ -80,7 +80,8 @@ def get_starlink():
     """
     logger.info("Accessed /starlink endpoint")
     data, status_code = get_data("starlink")
-    return make_response(jsonify(data), status_code)
+    logger.info(make_response(jsonify(data),status_code))
+    return data, status_code
 
 @api.app_errorhandler(404)
 def page_not_found(e):
