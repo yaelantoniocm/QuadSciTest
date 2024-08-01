@@ -11,7 +11,7 @@ def log_messages():
     project_root = os.path.abspath(os.path.join(current_directory, '..'))
     
     # We create the folder log if doesn't exists
-    log_dir = log_dir = os.path.join(project_root, 'log')
+    log_dir = os.path.join(project_root, 'log')
     
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -28,12 +28,20 @@ def log_messages():
     By not defining the logging level it inherits it from logger (logger is the parent)
     """
     file_handler = logging.FileHandler(log_filename)
+    
+    # Create the handler to print to the terminal
+    console_handler = logging.StreamHandler()
+
 
     # Giving the format of the message and adding to the handler
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
     file_handler.setFormatter(formatter)
-
-    # Add the handler to the logger
+    console_handler.setFormatter(formatter)
+    
     logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
     
     return logger
+
+logger = log_messages()
