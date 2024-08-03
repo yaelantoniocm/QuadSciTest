@@ -25,3 +25,6 @@ log/
 # Backup and Data folders
 backup/
 data/
+
+# Data Base configuration
+.env

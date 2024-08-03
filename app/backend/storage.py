@@ -1,10 +1,17 @@
+from datetime import datetime  
+from flask import current_app, Flask
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from threading import Thread
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from models import Rockets, Launches, Starlink, Base
+from config import DATABASE_URI
+
 import os
 import json
-from flask import current_app, Flask
-
-# Extra imports
-from datetime import datetime  
-from apscheduler.schedulers.background import BackgroundScheduler
+import time
 
 # Functions from other files
 from backend.api import get_rockets, get_launches, get_starlink
@@ -14,6 +21,9 @@ def save_data(app):
     """
     Function to save the data of the API calls from Space X, we will save it in JSON 
     and move old files to the backup folder.
+    
+    Args:
+        app (Flask): Flask application context.
     """
     with app.app_context():
         logger.info("Starting the save_data process")
@@ -24,6 +34,9 @@ def save_data(app):
             "launches": get_launches,
             "starlink": get_starlink
         }
+        
+        # Dictionary to store all data
+        all_data = {}  
         
         # Get the base directory for this script
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -57,6 +70,10 @@ def save_data(app):
                 move_to_backup(data_subdir, backup_subdir)
             else:
                 logger.error(f"Failed to fetch data for {key}")
+    
+        # Start a thread to run save_data_to_db after 120 seconds for each data type
+        db_thread = Thread(target=delay_save_data, args=(data_dir, 120))
+        db_thread.start()
             
 def move_to_backup(data_subdir, backup_subdir):
     """
@@ -88,6 +105,100 @@ def move_to_backup(data_subdir, backup_subdir):
             logger.info(f"Moved {source} to {destination}")  
     else:
         logger.info(f"No older files to move to backup in {data_subdir}") 
+    
+def save_to_db(data_dir):
+    """Save the transformed data to the SQL database.
+
+    Args:
+        data (list): List of data items to be saved.
+        data_type (string): The type of data being saved (e.g., 'rockets', 'launches', 'starlink').
+    """
+    try:
+        # Create the database engine and session
+        engine = create_engine(DATABASE_URI)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        
+        
+        # Load and save rockets data
+        rockets_dir = os.path.join(data_dir, 'rockets')
+        # To save the rockets data.
+        if os.path.exists(rockets_dir):
+            for file in os.listdir(rockets_dir):
+                if file.endswith('.json'):
+                    with open(os.path.join(rockets_dir, file), 'r') as json_file:
+                        data = json.load(json_file)
+                        for item in data:
+                            rocket = Rockets(
+                                id=item['id'],
+                                name=item['name'],
+                                success_rate_pct=item['success_rate_pct'],
+                                cost_per_launch=item['cost_per_launch'],
+                                height_meters=item['height']['meters'],
+                                diameter_meters=item['diameter']['meters'],
+                                mass_kg=item['mass']['kg'],
+                                thrust_sea_level_kN=item['first_stage']['thrust_sea_level']['kN'],
+                                thrust_vacuum_kN=item['first_stage']['thrust_vacuum']['kN'],
+                                first_flight=item['first_flight']
+                            )
+                            session.merge(rocket)
+            logger.info("Rocket data saved to the database.")
+        
+        # Load and save launches data
+        launches_dir = os.path.join(data_dir, 'launches')
+        if os.path.exists(launches_dir):
+            for file in os.listdir(launches_dir):
+                if file.endswith('.json'):
+                    with open(os.path.join(launches_dir, file), 'r') as json_file:
+                        data = json.load(json_file)
+                        for item in data:
+                            launch = Launches(
+                                id=item['id'],
+                                name=item['name'],
+                                date_utc=item['date_utc'],
+                                success=item['success'],
+                                rocket_id=item['rocket'],
+                                flight_number=item['flight_number'],
+                            )
+                            session.merge(launch)
+            logger.info("Launch data saved to the database.")
+        
+        # Load and save starlink data
+        starlink_dir = os.path.join(data_dir, 'starlink')
+        if os.path.exists(starlink_dir):
+            for file in os.listdir(starlink_dir):
+                if file.endswith('.json'):
+                    with open(os.path.join(starlink_dir, file), 'r') as json_file:
+                        data = json.load(json_file)
+                        for item in data:
+                            starlink = Starlink(
+                                id=item['id'],
+                                object_name=item['spaceTrack']['OBJECT_NAME'],
+                                launch_date=item['spaceTrack']['LAUNCH_DATE'],
+                                decay_date=item['spaceTrack']['DECAY_DATE'],
+                                inclination=item['spaceTrack']['INCLINATION'],
+                                apoapsis=item['spaceTrack']['APOAPSIS'],
+                                periapsis=item['spaceTrack']['PERIAPSIS'],
+                                launch_id=item['launch']
+                            )
+                            session.merge(starlink)
+            logger.info("Starlink data saved to the database.")
+        session.commit()
+    except Exception as e:
+        logger.error(f"Error saving data to the database: {e}")
+    finally:
+        session.close()
+
+def delay_save_data(data_dir, delay):
+    """Delay the execution of save_data_to_db by a specified amount of time.
+
+    Args:
+        data (list): List of data items to be saved.
+        data_type (string): The type of data being saved (e.g., 'rockets', 'launches', 'starlink').
+        delay (int): Number of seconds to wait before executing save_data_to_db.
+    """
+    time.sleep(delay)
+    save_to_db(data_dir)
 
 def start_scheduler(app):
     """
@@ -98,6 +209,6 @@ def start_scheduler(app):
     scheduler = BackgroundScheduler()
     #scheduler.add_job(save_data, 'interval', hours=12)
     # logger.info("Scheduler started to every 1 minute")
-    scheduler.add_job(save_data, 'interval', seconds=60, args=[app])
+    scheduler.add_job(save_data, 'interval', seconds=80, args=[app])
     logger.info("Scheduler started to every 1 minute")
     scheduler.start()
