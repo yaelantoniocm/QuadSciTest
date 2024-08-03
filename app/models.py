@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, String, Integer, Float, Date, inspect
+from sqlalchemy import create_engine, Column, String, Integer, Float, Date, inspect, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 
 from config import DATABASE_URI
 
@@ -37,6 +37,8 @@ class Rockets(Base):
     thrust_sea_level_kN = Column(Float)
     thrust_vacuum_kN = Column(Float)
     first_flight = Column(Date)
+    
+    launches = relationship('Launches', back_populates='rocket')
     
     def to_dict(self):
         return {
@@ -76,6 +78,11 @@ class Launches(Base):
     flight_number = Column(Integer)
     details = Column(String)
     
+    rocket_id = Column(String, ForeignKey('rockets.id'))
+    
+    rocket = relationship('Rockets', back_populates='launches')
+    starlinks = relationship('Starlink', back_populates='launch')
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -111,6 +118,10 @@ class Starlink(Base):
     apoapsis = Column(Float)
     periapsis = Column(Float)
     launch_id = Column(String)
+    
+    launch_id = Column(String, ForeignKey('launches.id'))
+    
+    launch = relationship('Launches', back_populates='starlinks')
     
     def to_dict(self):
         return {
