@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 from helpers.logger import logger
 from models import Rockets, Launches, Starlink
 from config import DATABASE_URI
+from helpers.statistics import get_rocket_statistics, get_launch_statistics, get_starlink_statistics,logger
 
 # Crear el motor de base de datos y la sesión
 engine = create_engine(DATABASE_URI)
@@ -52,19 +53,95 @@ def get_data(endpoint: str):
         return {"error": error_message}, 500
     
 
-@api.route('dashboard', methods=["GET"])
-def get_dashboard():
+@api.route('/dashboard', methods=["GET"])
+@api.route('/dashboard/<response_type>', methods=['GET'])
+def get_dashboard(response_type=None):
     """
-    Function to get the dashboards
+    Endpoint to get the dashboard with statistics.
     """
     logger.info("Accessed /dashboard endpoint")
-    logger.critical("Endpoint /api/ doesn't exist yet.")
-    return {"message": "Dashboard endpoint not yet implemented"}, 501
+    
+    try: 
+        rocket_stats = get_rocket_statistics()
+        launch_stats = get_launch_statistics()
+        starlink_stats = get_starlink_statistics()
+        
+        # Combine all stats into a single dictionary.
+        dashboard_data = {
+            "rockets": rocket_stats,
+            "launches": launch_stats,
+            "starlink": starlink_stats
+        }
+        if response_type is None or response_type == 'html':
+            logger.info("Returning data dashboard in HTML format")
+            return render_template_string("""
+            <h1>Dashboard Statistics</h1>
+
+            <h2>Rocket Statistics</h2>
+            <table border="1">
+                <tr>
+                    <th>Total Rockets</th>
+                    <th>Avg Success Rate (%)</th>
+                    <th>Total Cost Per Launch ($)</th>
+                    <th>Avg Height (m)</th>
+                    <th>Avg Diameter (m)</th>
+                </tr>
+                <tr>
+                    <td>{{ rockets.total_rockets }}</td>
+                    <td>{{ rockets.avg_success_rate }}</td>
+                    <td>{{ rockets.total_cost_per_launch }}</td>
+                    <td>{{ rockets.avg_height }}</td>
+                    <td>{{ rockets.avg_diameter }}</td>
+                </tr>
+            </table>
+
+            <h2>Launch Statistics</h2>
+            <table border="1">
+                <tr>
+                    <th>Total Launches</th>
+                    <th>Successful Launches</th>
+                    <th>Failed Launches</th>
+                    <th>Avg Launches Per Year</th>
+                    <th>Most Used Rocket</th>
+                </tr>
+                <tr>
+                    <td>{{ launches.total_launches }}</td>
+                    <td>{{ launches.successful_launches }}</td>
+                    <td>{{ launches.failed_launches }}</td>
+                    <td>{{ launches.avg_launches_per_year }}</td>
+                    <td>{{ launches.most_used_rocket }}</td>
+                </tr>
+            </table>
+
+            <h2>Starlink Statistics</h2>
+            <table border="1">
+                <tr>
+                    <th>Total Satellites</th>
+                    <th>Active Satellites</th>
+                    <th>Decayed Satellites</th>
+                </tr>
+                <tr>
+                    <td>{{ starlink.total_satellites }}</td>
+                    <td>{{ starlink.active_satellites }}</td>
+                    <td>{{ starlink.decayed_satellites }}</td>
+                </tr>
+            </table>
+            """, rockets=rocket_stats, launches=launch_stats, starlink=starlink_stats)
+        # Give the data in JSON format
+        elif response_type == 'json':
+            logger.info("Returning data dashboard in JSON format.")
+            return jsonify(dashboard_data)
+    except Exception as e:
+        logger.error(f"Error in /dashboard endpoint: {e}")
+        return jsonify({"error": str(e)}), 500
 
 @api.route('rockets', methods=["GET"])
 def get_rockets():
     """
-    Function to get all rockets and the status code
+    Function to get all rockets and the status code(200,300,400,500)
+
+    Returns:
+        GET: Return all the data of rockets in JSON format 
     """
     logger.info("Accessed /rockets endpoint")
     try:
@@ -114,7 +191,9 @@ def get_clear_rockets(response_type=None):
     try:
         rockets = session.query(Rockets).all()
         logger.info("Getting the clear data of rockets")
+        # Give the data in a HTML table format
         if response_type is None or response_type == 'html':
+            logger.info("Returning data of rockets in HTML format")
             return render_template_string("""
                 <html>
                 <head>
@@ -166,7 +245,9 @@ def get_clear_rockets(response_type=None):
                 </body>
                 </html>
             """, rockets=rockets)
+        # Give the data in JSON format
         elif response_type == 'json':
+            logger.info("Returning data of rockets in JSON format.")
             return jsonify([rocket.to_dict() for rocket in rockets])
         else:
             logger.error("Not Found")
@@ -187,8 +268,9 @@ def get_clear_launches(response_type=None):
     try:
         launches = session.query(Launches).all()
         logger.info("Getting the clear data of launches")
-        # retunr the data in a table form with HTML
+        # Give the data in a HTML table format
         if response_type is None or response_type == 'html':
+            logger.info("Returning data of launches in HTML format")
             return render_template_string("""
                 <html>
                 <head>
@@ -232,7 +314,9 @@ def get_clear_launches(response_type=None):
                 </body>
                 </html>
             """, launches=launches)
+        # Give the data in JSON format
         elif response_type == 'json':
+            logger.info("Returning data of launches in HTML format")
             return jsonify([launch.to_dict() for launch in launches])
         else:
             logger.error("Not Found")
@@ -253,7 +337,9 @@ def get__clear_starlink(response_type=None):
     try:
         starlink = session.query(Starlink).all()
         logger.info("Getting the clear data of starlink")
+        # Give the data in a HTML table format
         if response_type is None or response_type == 'html':
+            logger.info("Returning data of starlink in HTML format")
             return render_template_string("""
                 <html>
                 <head>
@@ -301,7 +387,9 @@ def get__clear_starlink(response_type=None):
                 </body>
                 </html>
             """, starlink=starlink)
+        # Give the data in JSON format
         elif response_type == 'json':
+            logger.info("Returning data of starlink in JSON format")
             return jsonify([s.to_dict() for s in starlink])
         else:
             logger.error("Not Found")
@@ -320,3 +408,12 @@ def page_not_found(e):
 def internal_server_error(e):
     logger.critical(f"Server error: {request.url} - {e}")
     return jsonify(error="An internal server error occurred"), 500
+
+@api.route('test_error', methods=["GET"])
+def test_error_501():
+    """
+    Endpoint to get the dashboard with statistics.
+    """
+    logger.info("Accessed /test_error endpoint")
+    logger.critical("Endpoint /api/.. doesn't exist yet.")
+    return {"message": "Dashboard endpoint not yet implemented"}, 501
