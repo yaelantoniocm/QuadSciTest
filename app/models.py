@@ -67,18 +67,15 @@ class Launches(Base):
         success (str): Success of the launch (True/False).
         rocket_id (str): Identifier of the rocket used.
         flight_number (int): Flight number.
-        details (str): Details of the launch.
     """
     __tablename__ = 'launches'
     id = Column(String, primary_key=True)
     name = Column(String)
     date_utc = Column(Date)
     success = Column(String)
-    rocket_id = Column(String)
-    flight_number = Column(Integer)
-    details = Column(String)
-    
     rocket_id = Column(String, ForeignKey('rockets.id'))
+    flight_number = Column(Integer)
+    
     
     rocket = relationship('Rockets', back_populates='launches')
     starlinks = relationship('Starlink', back_populates='launch')
@@ -117,8 +114,6 @@ class Starlink(Base):
     inclination = Column(Float)
     apoapsis = Column(Float)
     periapsis = Column(Float)
-    launch_id = Column(String)
-    
     launch_id = Column(String, ForeignKey('launches.id'))
     
     launch = relationship('Launches', back_populates='starlinks')

@@ -1,5 +1,5 @@
 # Dependencies
-from flask import Flask, jsonify, Blueprint, make_response, request
+from flask import Flask, jsonify, Blueprint, make_response, request, render_template_string
 import requests
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -104,7 +104,8 @@ def get_starlink():
         return jsonify({"error": str(e)}), 500
 
 @api.route('/rockets-clear', methods=['GET'])
-def get_clear_rockets():
+@api.route('/rockets-clear/<response_type>', methods=['GET'])
+def get_clear_rockets(response_type=None):
     """
     Function to get the clear data of the rockets form postgreSQL data base
     """
@@ -113,14 +114,71 @@ def get_clear_rockets():
     try:
         rockets = session.query(Rockets).all()
         logger.info("Getting the clear data of rockets")
-        return jsonify([rocket.to_dict() for rocket in rockets])
+        if response_type is None or response_type == 'html':
+            return render_template_string("""
+                <html>
+                <head>
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 80%;
+                            margin: auto;
+                            text-align: center;
+                        }
+                        th, td {
+                            padding: 8px;
+                            border: 1px solid black;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Success Rate (%)</th>
+                            <th>Cost per Launch</th>
+                            <th>Height (m)</th>
+                            <th>Diameter (m)</th>
+                            <th>Mass (kg)</th>
+                            <th>Thrust Sea Level (kN)</th>
+                            <th>Thrust Vacuum (kN)</th>
+                            <th>First Flight</th>
+                        </tr>
+                        {% for rocket in rockets %}
+                        <tr>
+                            <td>{{ rocket.id }}</td>
+                            <td>{{ rocket.name }}</td>
+                            <td>{{ rocket.success_rate_pct }}</td>
+                            <td>{{ rocket.cost_per_launch }}</td>
+                            <td>{{ rocket.height_meters }}</td>
+                            <td>{{ rocket.diameter_meters }}</td>
+                            <td>{{ rocket.mass_kg }}</td>
+                            <td>{{ rocket.thrust_sea_level_kN }}</td>
+                            <td>{{ rocket.thrust_vacuum_kN }}</td>
+                            <td>{{ rocket.first_flight }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </body>
+                </html>
+            """, rockets=rockets)
+        elif response_type == 'json':
+            return jsonify([rocket.to_dict() for rocket in rockets])
+        else:
+            logger.error("Not Found")
+            return jsonify(error="Invalid response type requested"), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
 
 @api.route('/launches-clear', methods=['GET'])
-def get_clear_launches():
+@api.route('/launches-clear/<response_type>', methods=['GET'])
+def get_clear_launches(response_type=None):
     """
     Function to get the clear data of the launches form postgreSQL data base
     """
@@ -129,14 +187,64 @@ def get_clear_launches():
     try:
         launches = session.query(Launches).all()
         logger.info("Getting the clear data of launches")
-        return jsonify([launch.to_dict() for launch in launches])
+        # retunr the data in a table form with HTML
+        if response_type is None or response_type == 'html':
+            return render_template_string("""
+                <html>
+                <head>
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 80%;
+                            margin: auto;
+                            text-align: center;
+                        }
+                        th, td {
+                            padding: 8px;
+                            border: 1px solid black;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Date UTC</th>
+                            <th>Success</th>
+                            <th>Rocket ID</th>
+                            <th>Flight Number</th>
+                        </tr>
+                        {% for launch in launches %}
+                        <tr>
+                            <td>{{ launch.id }}</td>
+                            <td>{{ launch.name }}</td>
+                            <td>{{ launch.date_utc }}</td>
+                            <td>{{ launch.success }}</td>
+                            <td>{{ launch.rocket_id }}</td>
+                            <td>{{ launch.flight_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </body>
+                </html>
+            """, launches=launches)
+        elif response_type == 'json':
+            return jsonify([launch.to_dict() for launch in launches])
+        else:
+            logger.error("Not Found")
+            return jsonify(error="Invalid response type requested"), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
 
 @api.route('/starlink-clear', methods=['GET'])
-def get__clear_starlink():
+@api.route('/starlink-clear/<response_type>', methods=['GET'])
+def get__clear_starlink(response_type=None):
     """
     Function to get the clear data of the starlink satellites form postgreSQL data base
     """
@@ -145,7 +253,59 @@ def get__clear_starlink():
     try:
         starlink = session.query(Starlink).all()
         logger.info("Getting the clear data of starlink")
-        return jsonify([s.to_dict() for s in starlink])
+        if response_type is None or response_type == 'html':
+            return render_template_string("""
+                <html>
+                <head>
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 80%;
+                            margin: auto;
+                            text-align: center;
+                        }
+                        th, td {
+                            padding: 8px;
+                            border: 1px solid black;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Object Name</th>
+                            <th>Launch Date</th>
+                            <th>Decay Date</th>
+                            <th>Inclination</th>
+                            <th>Apoapsis</th>
+                            <th>Periapsis</th>
+                            <th>Launch ID</th>
+                        </tr>
+                        {% for s in starlink %}
+                        <tr>
+                            <td>{{ s.id }}</td>
+                            <td>{{ s.object_name }}</td>
+                            <td>{{ s.launch_date }}</td>
+                            <td>{{ s.decay_date }}</td>
+                            <td>{{ s.inclination }}</td>
+                            <td>{{ s.apoapsis }}</td>
+                            <td>{{ s.periapsis }}</td>
+                            <td>{{ s.launch_id }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </body>
+                </html>
+            """, starlink=starlink)
+        elif response_type == 'json':
+            return jsonify([s.to_dict() for s in starlink])
+        else:
+            logger.error("Not Found")
+            return jsonify(error="Invalid response type requested"), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

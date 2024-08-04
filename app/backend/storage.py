@@ -71,8 +71,8 @@ def save_data(app):
             else:
                 logger.error(f"Failed to fetch data for {key}")
     
-        # Start a thread to run save_data_to_db after 120 seconds for each data type
-        db_thread = Thread(target=delay_save_data, args=(data_dir, 120))
+        # Start a thread to run save_to_db after we save the JSON and move the JSON to the backup.
+        db_thread = Thread(target=save_to_db, args=(data_dir,))
         db_thread.start()
             
 def move_to_backup(data_subdir, backup_subdir):
@@ -92,8 +92,8 @@ def move_to_backup(data_subdir, backup_subdir):
     
     # Sort all the JSON by modification date if there is more than 1
     if len(files) > 1:
-        # Soret the files with the modification time
-        files.sort(key=lambda f: os.path.getmtime(os.path.join(data_subdir, i))) 
+        # Sorted the files with the modification time
+        files.sort(key=lambda f: os.path.getmtime(os.path.join(data_subdir, f))) 
     
     
     # All files are moved to the backup folder except the most recent one.
@@ -106,6 +106,32 @@ def move_to_backup(data_subdir, backup_subdir):
     else:
         logger.info(f"No older files to move to backup in {data_subdir}") 
     
+    # Ensure only the 40 most recent files are kept in the backup folder
+    cleanup_backup_folder(backup_subdir)
+
+def cleanup_backup_folder(backup_subdir):
+    """
+    Function to clean up the backup folder, ensuring only the 40 most recent files are kept.
+    Args:
+        backup_subdir (path): The subdirectory where the backup data is saved (backup/rockets)
+    """
+    files= []
+    # Iterate over each file in the backup directory, check if the file ends with '.json', if so, add it to the 'files' list
+    for i in os.listdir(backup_subdir):
+        if i.endswith('.json'):
+            files.append(i)
+    
+    # Sort all the JSON files by modification date
+    if len(files) > 40:
+        # Sort the files by modification time
+        files.sort(key=lambda f: os.path.getmtime(os.path.join(backup_subdir, f)))
+
+        # Remove the oldest files, keeping only the 40 most recent
+        files_to_remove = files[:-40]
+        for file in files_to_remove:
+            os.remove(os.path.join(backup_subdir, file))
+            logger.info(f"Removed old backup file: {file}")
+
 def save_to_db(data_dir):
     """Save the transformed data to the SQL database.
 
@@ -143,6 +169,8 @@ def save_to_db(data_dir):
                             )
                             session.merge(rocket)
             logger.info("Rocket data saved to the database.")
+        else:
+            logger.error("Rocket information is empty.")
         
         # Load and save launches data
         launches_dir = os.path.join(data_dir, 'launches')
@@ -162,6 +190,8 @@ def save_to_db(data_dir):
                             )
                             session.merge(launch)
             logger.info("Launch data saved to the database.")
+        else:
+            logger.error("Launches information is empty.")
         
         # Load and save starlink data
         starlink_dir = os.path.join(data_dir, 'starlink')
@@ -183,22 +213,14 @@ def save_to_db(data_dir):
                             )
                             session.merge(starlink)
             logger.info("Starlink data saved to the database.")
+        else:
+            logger.error("Starlink information is empty.")
         session.commit()
+        
     except Exception as e:
         logger.error(f"Error saving data to the database: {e}")
     finally:
         session.close()
-
-def delay_save_data(data_dir, delay):
-    """Delay the execution of save_data_to_db by a specified amount of time.
-
-    Args:
-        data (list): List of data items to be saved.
-        data_type (string): The type of data being saved (e.g., 'rockets', 'launches', 'starlink').
-        delay (int): Number of seconds to wait before executing save_data_to_db.
-    """
-    time.sleep(delay)
-    save_to_db(data_dir)
 
 def start_scheduler(app):
     """

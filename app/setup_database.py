@@ -81,6 +81,7 @@ def create_database_and_user():
             # We create the database
             cursor.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(new_db_name)))
             logger.info(f"Database '{new_db_name}' created successfully.")
+            
         if check_user_exists(cursor, new_user):
             logger.info(f"The user '{new_user}' already exists.")
         else:
@@ -88,8 +89,10 @@ def create_database_and_user():
             cursor.execute(sql.SQL("CREATE USER {} WITH PASSWORD %s").format(sql.Identifier(new_user)), [new_password])
             cursor.execute(sql.SQL("GRANT ALL PRIVILEGES ON DATABASE {} TO {}").format(sql.Identifier(new_db_name), sql.Identifier(new_user)))
             logger.info(f"User '{new_user}' successfully created and granted privileges in the '{new_db_name}' database.")
+            
     except Exception as e:
             logger.critical(f"Error creating database or user: {e}")
+            
     finally:
         # We close the connection
         if connection:

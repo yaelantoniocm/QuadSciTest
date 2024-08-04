@@ -9,6 +9,7 @@ app/
 │
 ├── log/
 │ └── # Log files
+│
 ├── data/
 │ └── rockets/
 │ └── # JSONs with rockets information
@@ -16,6 +17,7 @@ app/
 │ └── # JSONs with launches information
 │ └── starlink/
 │ └── # JSONs with Starlink satellite information
+│
 ├── backup/
 │ └── rockets/
 │ └── # JSON with old rockets data

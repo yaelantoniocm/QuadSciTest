@@ -93,7 +93,18 @@ Also you can install dependencies manually
 - Then check the database:
 
 * sql -h localhost -U postgres -d postgres
+* or psql -h localhost -U QuadSciTest -d SpaceX
 
-* Finally run:
+http://127.0.0.1:5001/api/launches-clear
+http://127.0.0.1:5001/api/starlink-clear
+http://127.0.0.1:5001/api/rockets-clear
 
-- app.py
+or
+
+http://127.0.0.1:5001/api/launches-clear/json
+http://127.0.0.1:5001/api/starlink-clear/json
+http://127.0.0.1:5001/api/rockets-clear/json
+
+- Finally run:
+
+* app.py
