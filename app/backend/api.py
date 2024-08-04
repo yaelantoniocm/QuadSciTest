@@ -72,7 +72,7 @@ def get_dashboard(response_type=None):
             "launches": launch_stats,
             "starlink": starlink_stats
         }
-        if response_type is None or response_type == 'html':
+        if response_type == 'html':
             logger.info("Returning data dashboard in HTML format")
             return render_template_string("""
                 <style>
@@ -143,14 +143,14 @@ def get_dashboard(response_type=None):
                 </table>
             """, rockets=rocket_stats, launches=launch_stats, starlink=starlink_stats)
         # Give the data in JSON format
-        elif response_type == 'json':
+        elif response_type is None or response_type == 'json':
             logger.info("Returning data dashboard in JSON format.")
             return jsonify(dashboard_data)
     except Exception as e:
         logger.error(f"Error in /dashboard endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@api.route('rockets', methods=["GET"])
+@api.route('rockets-raw', methods=["GET"])
 def get_rockets():
     """
     Function to get all rockets and the status code(200,300,400,500)
@@ -167,7 +167,7 @@ def get_rockets():
         logger.error(f"Error in /rockets endpoint: {e}")
         return jsonify({"error": str(e)}), 500
     
-@api.route('launches', methods=["GET"])
+@api.route('launches-raw', methods=["GET"])
 def get_launches():
     """
     Function to get all the launches
@@ -181,7 +181,7 @@ def get_launches():
         logger.error(f"Error in /launches endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@api.route('starlink', methods=["GET"])
+@api.route('starlink-raw', methods=["GET"])
 def get_starlink():
     """
     Function to get all the starlink satellities
@@ -195,8 +195,8 @@ def get_starlink():
         logger.error(f"Error in /starlink endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@api.route('/rockets-clear', methods=['GET'])
-@api.route('/rockets-clear/<response_type>', methods=['GET'])
+@api.route('/rockets', methods=['GET'])
+@api.route('/rockets/<response_type>', methods=['GET'])
 def get_clear_rockets(response_type=None):
     """
     Function to get the clear data of the rockets form postgreSQL data base
@@ -207,7 +207,7 @@ def get_clear_rockets(response_type=None):
         rockets = session.query(Rockets).all()
         logger.info("Getting the clear data of rockets")
         # Give the data in a HTML table format
-        if response_type is None or response_type == 'html':
+        if response_type == 'html':
             logger.info("Returning data of rockets in HTML format")
             return render_template_string("""
                 <html>
@@ -261,7 +261,7 @@ def get_clear_rockets(response_type=None):
                 </html>
             """, rockets=rockets)
         # Give the data in JSON format
-        elif response_type == 'json':
+        elif response_type is None or response_type == 'json':
             logger.info("Returning data of rockets in JSON format.")
             return jsonify([rocket.to_dict() for rocket in rockets])
         else:
@@ -272,8 +272,8 @@ def get_clear_rockets(response_type=None):
     finally:
         session.close()
 
-@api.route('/launches-clear', methods=['GET'])
-@api.route('/launches-clear/<response_type>', methods=['GET'])
+@api.route('/launches', methods=['GET'])
+@api.route('/launches/<response_type>', methods=['GET'])
 def get_clear_launches(response_type=None):
     """
     Function to get the clear data of the launches form postgreSQL data base
@@ -284,7 +284,7 @@ def get_clear_launches(response_type=None):
         launches = session.query(Launches).all()
         logger.info("Getting the clear data of launches")
         # Give the data in a HTML table format
-        if response_type is None or response_type == 'html':
+        if response_type == 'html':
             logger.info("Returning data of launches in HTML format")
             return render_template_string("""
                 <html>
@@ -330,7 +330,7 @@ def get_clear_launches(response_type=None):
                 </html>
             """, launches=launches)
         # Give the data in JSON format
-        elif response_type == 'json':
+        elif response_type is None or response_type == 'json':
             logger.info("Returning data of launches in HTML format")
             return jsonify([launch.to_dict() for launch in launches])
         else:
@@ -341,8 +341,8 @@ def get_clear_launches(response_type=None):
     finally:
         session.close()
 
-@api.route('/starlink-clear', methods=['GET'])
-@api.route('/starlink-clear/<response_type>', methods=['GET'])
+@api.route('/starlink', methods=['GET'])
+@api.route('/starlink/<response_type>', methods=['GET'])
 def get__clear_starlink(response_type=None):
     """
     Function to get the clear data of the starlink satellites form postgreSQL data base
@@ -353,7 +353,7 @@ def get__clear_starlink(response_type=None):
         starlink = session.query(Starlink).all()
         logger.info("Getting the clear data of starlink")
         # Give the data in a HTML table format
-        if response_type is None or response_type == 'html':
+        if response_type == 'html':
             logger.info("Returning data of starlink in HTML format")
             return render_template_string("""
                 <html>
@@ -403,7 +403,7 @@ def get__clear_starlink(response_type=None):
                 </html>
             """, starlink=starlink)
         # Give the data in JSON format
-        elif response_type == 'json':
+        elif response_type is None or response_type == 'json':
             logger.info("Returning data of starlink in JSON format")
             return jsonify([s.to_dict() for s in starlink])
         else:

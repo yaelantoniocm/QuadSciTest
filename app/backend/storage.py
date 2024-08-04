@@ -226,11 +226,30 @@ def start_scheduler(app):
     """
     Start the scheduler and execute the save_data method immediately.
     """
-        
-    # Schedule the save_data function to run every 12 hours.
     scheduler = BackgroundScheduler()
-    #scheduler.add_job(save_data, 'interval', hours=12)
-    # logger.info("Scheduler started to every 1 minute")
-    scheduler.add_job(save_data, 'interval', seconds=80, args=[app])
-    logger.info("Scheduler started to every 1 minute")
-    scheduler.start()
+    
+    try: 
+        # logger.info("Scheduler started to every 80 secondas")
+        scheduler.add_job(save_data, 'interval', seconds=80, args=[app])
+    
+        # Schedule the save_data function to run every 12 hours.
+        # scheduler.add_job(save_data, 'interval', hours=12)
+    
+        # Other example to Schedule in specific time.
+    
+        # Schedule the job to run daily at 3 AM
+        # scheduler.add_job(save_data, 'cron', hour=3, minute=0, args=[app])
+        # logger.info("Scheduler started to run daily at 3 AM")
+    
+        # Schedule the job to run daily at 12 AM
+        # scheduler.add_job(save_data, 'cron', hour=0, minute=0, args=[app])
+        # logger.info("Scheduler started to run daily at 12 AM")
+    
+        # Schedule the job to run daily at 3 PM
+        # scheduler.add_job(save_data, 'cron', hour=15, minute=0, args=[app])
+        # logger.info("Scheduler started to run daily at 3 PM")
+    
+        logger.info("Scheduler started to every 80 seconds")
+        scheduler.start()
+    except Exception as e:
+        logger.error(f"An error occurred while starting the scheduler: {e}")
