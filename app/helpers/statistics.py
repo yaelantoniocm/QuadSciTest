@@ -18,20 +18,17 @@ def get_rocket_statistics():
     """
     session = Session()
     try:
-        total_rockets = session.query(func.count(Rockets.id)).scalar()
-        avg_success_rate = session.query(func.avg(Rockets.success_rate_pct)).scalar()
-        total_cost_per_launch = session.query(func.sum(Rockets.cost_per_launch)).scalar()
-        avg_height = session.query(func.avg(Rockets.height_meters)).scalar()
-        avg_diameter = session.query(func.avg(Rockets.diameter_meters)).scalar()
-        return {
-            "total_rockets": total_rockets,
-            "avg_success_rate": avg_success_rate,
-            "total_cost_per_launch": total_cost_per_launch,
-            "avg_height": avg_height,
-            "avg_diameter": avg_diameter
+        rockets = session.query(Rockets).all()
+        rocket_stats = {
+            "total_rockets": len(rockets),
+            "avg_success_rate": sum([rocket.success_rate_pct for rocket in rockets]) / len(rockets) if rockets else 0,
+            "total_cost_per_launch": sum([rocket.cost_per_launch for rocket in rockets]),
+            "avg_height": sum([rocket.height_meters for rocket in rockets]) / len(rockets) if rockets else 0,
+            "avg_diameter": sum([rocket.diameter_meters for rocket in rockets]) / len(rockets) if rockets else 0
         }
-    except Exception as e:
+        return rocket_stats
         # Log the error
+    except Exception as e:
         logger.error(f"Error retrieving rocket statistics: {e}")
         # Raise the exception to be handled by the caller
         raise
@@ -48,51 +45,15 @@ def get_launch_statistics():
     """
     session = Session()
     try:
-        total_launches = session.query(func.count(Launches.id)).scalar()
-        successful_launches = session.query(func.count(Launches.id)).filter(Launches.success == 'true').scalar()
-        failed_launches = session.query(func.count(Launches.id)).filter(Launches.success == 'false').scalar()
-        avg_launches_per_year = session.query(func.count(Launches.id) / func.count(func.distinct(func.extract('year', Launches.date_utc)))).scalar()
-        most_used_rocket = session.query(Launches.rocket_id, func.count(Launches.rocket_id)).group_by(Launches.rocket_id).order_by(func.count(Launches.rocket_id).desc()).first()
-        return {
-            "total_launches": total_launches,
-            "successful_launches": successful_launches,
-            "failed_launches": failed_launches,
-            "avg_launches_per_year": avg_launches_per_year,
-            "most_used_rocket": {
-                "rocket_id": most_used_rocket[0],
-                "count": most_used_rocket[1]
-            } if most_used_rocket else None
+        launches = session.query(Launches).all()
+        launch_stats = {
+            "total_launches": len(launches),
+            "successful_launches": len([launch for launch in launches if launch.success == 'true']),
+            "failed_launches": len([launch for launch in launches if launch.success == 'false']),
+            "avg_launches_per_year": len(launches) / ((max([launch.date_utc for launch in launches]) - min([launch.date_utc for launch in launches])).days / 365) if launches else 0,
+            "most_used_rocket": max(set([launch.rocket_id for launch in launches]), key=[launch.rocket_id for launch in launches].count) if launches else None
         }
-    except Exception as e:
-        # Log the error
-        logger.error(f"Error retrieving launch statistics: {e}")
-        # Raise the exception to be handled by the caller
-        raise
-    finally:
-        session.close()
-
-def get_launch_statistics():
-    """
-    Retrieve statistics related to launches from the database.
-
-    Returns:
-        dict: A dictionary containing launch statistics, including the total number of launches,
-              number of successful and failed launches, average launches per year, and the most used rocket model.
-    """
-    session = Session()
-    try:
-        total_launches = session.query(func.count(Launches.id)).scalar()
-        successful_launches = session.query(func.count(Launches.id)).filter(Launches.success == 'true').scalar()
-        failed_launches = session.query(func.count(Launches.id)).filter(Launches.success == 'false').scalar()
-        avg_launches_per_year = session.query(func.count(Launches.id) / func.count(func.distinct(func.extract('year', Launches.date_utc)))).scalar()
-        most_used_rocket = session.query(Launches.rocket_id, func.count(Launches.rocket_id)).group_by(Launches.rocket_id).order_by(func.count(Launches.rocket_id).desc()).first()
-        return {
-            "total_launches": total_launches,
-            "successful_launches": successful_launches,
-            "failed_launches": failed_launches,
-            "avg_launches_per_year": avg_launches_per_year,
-            "most_used_rocket": most_used_rocket
-        }
+        return launch_stats
     except Exception as e:
         # Log the error
         logger.error(f"Error retrieving launch statistics: {e}")
@@ -111,14 +72,13 @@ def get_starlink_statistics():
     """
     session = Session()
     try:
-        total_satellites = session.query(func.count(Starlink.id)).scalar()
-        active_satellites = session.query(func.count(Starlink.id)).filter(Starlink.decay_date == None).scalar()
-        decayed_satellites = session.query(func.count(Starlink.id)).filter(Starlink.decay_date != None).scalar()
-        return {
-            "total_satellites": total_satellites,
-            "active_satellites": active_satellites,
-            "decayed_satellites": decayed_satellites
+        starlinks = session.query(Starlink).all()
+        starlink_stats = {
+            "total_satellites": len(starlinks),
+            "active_satellites": len([satellite for satellite in starlinks if satellite.decay_date is None]),
+            "decayed_satellites": len([satellite for satellite in starlinks if satellite.decay_date is not None])
         }
+        return starlink_stats
     except Exception as e:
         # Log the error
         logger.error(f"Error retrieving Starlink statistics: {e}")
