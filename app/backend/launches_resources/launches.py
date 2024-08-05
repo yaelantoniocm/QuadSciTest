@@ -8,6 +8,7 @@ from constants import LAUNCHES
 from helpers.logger import logger
 from backend.spaceX.spaceX_data import get_data
 from backend.launches_resources.launches_filter_sort import get_filter_sort_launches
+from backend.api import api
 
 # Create the database engine and session
 engine = create_engine(DATABASE_URI)
@@ -15,7 +16,7 @@ Session = sessionmaker(bind=engine)
 
 launches_bp = Blueprint(LAUNCHES, __name__)
 
-@launches_bp.route('-raw', methods=["GET"])
+@api.route('/launches-raw', methods=["GET"])
 def get_launches():
     """
     Function to get all the launches
@@ -29,8 +30,8 @@ def get_launches():
         logger.error(f"Error in /launches endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@launches_bp.route('', methods=['GET'])
-@launches_bp.route('/<response_type>', methods=['GET'])
+@api.route('/launches', methods=['GET'])
+@api.route('/launches/<response_type>', methods=['GET'])
 def get_clear_launches(response_type=None):
     """
     Endpoint to get launches data with optional filtering and sorting.

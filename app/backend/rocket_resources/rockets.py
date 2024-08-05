@@ -1,4 +1,5 @@
 # Dependencies
+
 from flask import Flask, jsonify, Blueprint, make_response, request, render_template_string
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -10,13 +11,14 @@ from backend.rocket_resources.rocket_filter_sort import get_filter_sort_rocket
 from constants import ROCKETS
 from config import DATABASE_URI
 
+# Import the Blueprint from api.py
+from backend.api import api
+
 # Create the database engine and session
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
-rockets_bp = Blueprint(ROCKETS, __name__)
-
-@rockets_bp.route('-raw', methods=["GET"])
+@api.route('/rockets-raw', methods=["GET"])
 def get_rockets():
     """
     Function to get all rockets and the status code(200,300,400,500)
@@ -34,8 +36,8 @@ def get_rockets():
         return jsonify({"error": str(e)}), 500
 
 
-@rockets_bp.route('', methods=['GET'])
-@rockets_bp.route('/<response_type>', methods=['GET'])
+@api.route('/rockets', methods=['GET'])
+@api.route('/rockets/<response_type>', methods=['GET'])
 def get_clear_rockets(response_type=None):
     """
     Endpoint to get rocket data with optional filtering and sorting.

@@ -9,14 +9,13 @@ from backend.spaceX.spaceX_data import get_data
 from backend.starlink_resources.starlink_filter_sort import get_filter_sort_starlink
 from constants import STARLINK
 from config import DATABASE_URI
+from backend.api import api
 
 # Create the database engine and session
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
-starlink_bp = Blueprint(STARLINK, __name__)
-
-@starlink_bp.route('-raw', methods=["GET"])
+@api.route('/starlink-raw', methods=["GET"])
 def get_starlink():
     """
     Function to get all the starlink satellities
@@ -30,8 +29,8 @@ def get_starlink():
         logger.error(f"Error in /starlink endpoint: {e}")
         return jsonify({"error": str(e)}), 500
 
-@starlink_bp.route('', methods=['GET'])
-@starlink_bp.route('/<response_type>', methods=['GET'])
+@api.route('/starlink', methods=['GET'])
+@api.route('/starlink/<response_type>', methods=['GET'])
 def get_clear_starlink(response_type=None):
     """
     Endpoint to get starlink data with optional filtering and sorting.

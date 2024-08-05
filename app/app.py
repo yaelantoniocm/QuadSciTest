@@ -1,7 +1,7 @@
 from flask import Flask
 from threading import Thread
 
-from backend.application.api import api
+from backend.api import api
 from backend.storage import start_scheduler
 from databases.models import create_tables
 from constants import API_PREFIX

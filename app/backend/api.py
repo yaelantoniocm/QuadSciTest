@@ -8,12 +8,6 @@ from sqlalchemy import create_engine
 # Other classes
 from helpers.logger import logger
 from config import DATABASE_URI
-from constants import API_PREFIX
-
-# Importa y registra cada Blueprint
-from backend.rocket_resources.rockets import rockets_bp
-from backend.launches_resources.launches import launches_bp
-from backend.starlink_resources.starlink import starlink_bp
 
 # Create the database engine and session
 engine = create_engine(DATABASE_URI)
@@ -39,8 +33,3 @@ def test_error_501():
     logger.info("Accessed /test_error endpoint")
     logger.critical("Endpoint /api/.. doesn't exist yet.")
     return {"message": "Dashboard endpoint not yet implemented"}, 501
-
-# Register each Blueprint under the API_PREFIX
-api.register_blueprint(rockets_bp)
-api.register_blueprint(launches_bp)
-api.register_blueprint(starlink_bp)
