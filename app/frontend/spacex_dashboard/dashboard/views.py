@@ -82,8 +82,7 @@ def dashboard_view(request):
         'pie_chart': pie_chart,
     }
 
-    return render(request, 'dashboard.html', context)
-
+    return render(request, 'dashboard/dashboard.html', context)
 
 def home_view(request):
     return redirect('dashboard')

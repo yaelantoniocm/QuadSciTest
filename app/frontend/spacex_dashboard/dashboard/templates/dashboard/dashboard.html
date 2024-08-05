@@ -1,56 +1,9 @@
+{% extends "base.html" %}
 {% load render_table from django_tables2 %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SpaceX Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        table {
-            width: 50%;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        h2, h3 {
-            text-align: center;
-        }
-        .chart-container {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px auto;
-            width: 80%;
-        }
-        .chart {
-            width: 45%;
-            margin: 20px 0;
-        }
-        .legend-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .legend {
-            display: flex;
-            align-items: center;
-            margin-right: 15px;
-        }
-        .legend-color {
-            width: 12px;
-            height: 12px;
-            margin-right: 5px;
-        }
-    </style>
-</head>
-<body>
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
     <h2>Launches Statistics</h2>
     {% render_table launch_table %}
 
@@ -98,5 +51,4 @@
             </div>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

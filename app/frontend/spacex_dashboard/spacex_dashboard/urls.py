@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from dashboard.views import home_view
+from dashboard.views import home_view, dashboard_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dashboard/', include('dashboard.urls')),
-    path('', home_view, name='home'),  # Ruta para la página principal
+    path('', home_view, name='home'),
+    path('dashboard/', dashboard_view, name='dashboard'),
+    path('rockets-and-launches/', include('rocket_launch_app.urls')),
 ]
 
