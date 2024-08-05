@@ -19,12 +19,15 @@ def generate_bar_chart(data):
 
     ax.bar(categories, values, color=['red', 'green', 'blue', 'orange'])
     ax.set_title('Launch Statistics')
-    ax.set_xlabel('Categories')
+    ax.set_xlabel('')
     ax.set_ylabel('Count')
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis has integer ticks
 
-    # Move the x-axis labels slightly to the right
-    ax.spines['left'].set_position(('outward', 10))
+    # Remove x-axis labels to avoid clutter
+    ax.set_xticklabels([])
+
+    # Adjust the position of the bar chart to the right
+    fig.subplots_adjust(left=0.2, right=0.9, top=0.8, bottom=0.2)
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
@@ -46,6 +49,9 @@ def generate_pie_chart(data):
     ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=['green', 'red'])
     ax.set_title('Starlink Satellite Statistics')
     ax.axis('equal')
+
+    # Remove the legend from the chart
+    ax.legend().set_visible(False)
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png')

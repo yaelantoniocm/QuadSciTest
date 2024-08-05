@@ -36,7 +36,7 @@
         .legend-container {
             display: flex;
             justify-content: center;
-            margin-top: -10px;
+            margin-top: 10px;
         }
         .legend {
             display: flex;
@@ -64,10 +64,38 @@
         <div class="chart">
             <h3>Launch Statistics</h3>
             <img src="data:image/png;base64,{{ bar_chart }}" alt="Bar Chart">
+            <div class="legend-container">
+                <div class="legend">
+                    <div class="legend-color" style="background-color: red;"></div>
+                    <span>Failed Launches</span>
+                </div>
+                <div class="legend">
+                    <div class="legend-color" style="background-color: green;"></div>
+                    <span>Successful Launches</span>
+                </div>
+                <div class="legend">
+                    <div class="legend-color" style="background-color: blue;"></div>
+                    <span>Total Launches</span>
+                </div>
+                <div class="legend">
+                    <div class="legend-color" style="background-color: orange;"></div>
+                    <span>Avg Launches Per Year</span>
+                </div>
+            </div>
         </div>
         <div class="chart">
             <h3>Starlink Satellite Statistics</h3>
             <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart">
+            <div class="legend-container">
+                <div class="legend">
+                    <div class="legend-color" style="background-color: green;"></div>
+                    <span>Active Satellites</span>
+                </div>
+                <div class="legend">
+                    <div class="legend-color" style="background-color: red;"></div>
+                    <span>Decayed Satellites</span>
+                </div>
+            </div>
         </div>
     </div>
 </body>
