@@ -1,62 +1,47 @@
 app/
 │
 ├── backend/
-│ ├── application
-│     └── api.py
-│
-│ ├── dashboard
-│     └── dashboard.py
-│
-│ ├── launches_resources
-│     └── launches_filter_sort.py
-│
-│ ├── rocket_resources
-│     └── rocket_filter_sort.py
-│
-│ ├── spaceX
-│     └── spaceX_data.py
-│
-│ ├── starlink_resources
-│     └── starlink_filter_sort.py
-│
+│ ├── application/
+│ │ └── api.py
+│ ├── dashboard/
+│ │ └── dashboard.py
+│ ├── launches_resources/
+│ │ └── launches_filter_sort.py
+│ ├── rocket_resources/
+│ │ └── rocket_filter_sort.py
+│ ├── spaceX/
+│ │ └── spaceX_data.py
+│ ├── starlink_resources/
+│ │ └── starlink_filter_sort.py
 │ └── storage.py
-│
 ├── helpers/
-│   └── query_filter_sort.py
-│
+│ └── query_filter_sort.py
 ├── log/
-│   └── # Log files
-│
+│ └── # Log files
+├── fronted/
+│ └── SpaceX/
+│     ├── SpaceX/
+│     ├── dashboard/
+│     ├── manage.py
+│     └── ...
 ├── data/
-│ └── rockets/
-│     └── # JSONs with rockets information
-│ └── launches/
-│     └── # JSONs with launches information
+│ ├── rockets/
+│ ├── launches/
 │ └── starlink/
-│     └── # JSONs with Starlink satellite information
-│
-├── databases
-│     └── models.py # SQLAlchemy Models
-|
+├── databases/
+│ └── models.py
 ├── backup/
-│ └── rockets/
-│     └── # JSON with old rockets data
-│ └── launches/
-│     └── # JSON with old launches data
+│ ├── rockets/
+│ ├── launches/
 │ └── starlink/
-│     └── # JSON with old Starlink satellite data
-│
 ├── windows/
-│ ├── setup_database.bat # Script to configure the database on Windows
-│ └── install_dependencies.bat # Script to install dependencies on Windows
-│
+│ ├── setup_database.bat
+│ └── install_dependencies.bat
 ├── linux/
-│ ├── setup_database.sh # Script to configure the database on Linux/Mac
-│ └── install_dependencies.sh # Script to install dependencies on Linux/Mac
-│
-│
-├── app.py # Flask Core App
-├── .env # File with the database credentials
-├── config.py # Database configuration file
-├── setup_database.py # Script to configure the database
-├── requirements.txt # Python dependency file
+│ ├── setup_database.sh
+│ └── install_dependencies.sh
+├── app.py
+├── .env
+├── config.py
+├── setup_database.py
+├── requirements.txt

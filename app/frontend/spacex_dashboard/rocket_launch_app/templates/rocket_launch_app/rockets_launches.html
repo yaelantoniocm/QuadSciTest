@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rockets and Launches{% endblock %}
+
+{% block content %}
+    <h2>Rockets and Launches</h2>
+    <div class="chart-container">
+        <div class="chart">
+            <h3>Success Rate Comparison of Rocket Models</h3>
+            <img src="{% static 'images/rocket_success_comparison.png' %}" alt="Rocket Success Comparison">
+        </div>
+        <div class="chart">
+            <h3>Launch Cost Comparison of Rockets</h3>
+            <img src="{% static 'images/rocket_cost_comparison.png' %}" alt="Rocket Cost Comparison">
+        </div>
+    </div>
+    <div class="chart-container">
+        <div class="chart">
+            <h3>Launch Success Rate Per Year</h3>
+            <img src="{% static 'images/launch_success_rate_per_year.png' %}" alt="Launch Success Rate Per Year">
+        </div>
+        <div class="chart">
+            <h3>Weight Comparison of Rockets</h3>
+            <img src="{% static 'images/rocket_weight_comparison.png' %}" alt="Rocket Weight Comparison">
+        </div>
+    </div>
+{% endblock %}

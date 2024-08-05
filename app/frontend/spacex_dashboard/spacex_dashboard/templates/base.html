@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}SpaceX Dashboard{% endblock %}</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        nav {
+            width: 100%;
+            background-color: #B98DBE;
+            overflow: auto;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+        nav ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            display: flex;
+            align-items: center;
+        }
+        nav ul li {
+            display: inline-block;
+        }
+        nav ul li a {
+            background: #B98DBE;
+            text-decoration: none;
+            color: white;
+            width: 200px;
+            display: block;
+            text-align: center;
+            transition: 0.5s all;
+            padding: 0 20px;
+            line-height: 70px;
+        }
+        nav ul li a:hover {
+            background: #f4f4f4;
+            color: #333;
+        }
+        .nav-image {
+            height: 50px;
+            margin: 0 auto;
+            transform: translateX(-6.5cm);
+        }
+        .container {
+            width: 80%;
+            margin: 100px auto 20px; 
+        }
+        table {
+            width: 100%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            width: 100%;
+        }
+        .chart {
+            width: 45%;
+            margin: 20px 0;
+        }
+        .legend-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .legend {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'rockets_launches' %}">Rockets and Launches</a></li>
+        </ul>
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="nav-image">
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
