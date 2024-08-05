@@ -4,6 +4,7 @@ from threading import Thread
 from backend.application.api import api
 from backend.storage import start_scheduler
 from databases.models import create_tables
+from constants import API_PREFIX
 
 from config import DATABASE_URI
 
@@ -13,7 +14,7 @@ def create_app():
     """
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI 
-    app.register_blueprint(api, url_prefix='/api')
+    app.register_blueprint(api, url_prefix=API_PREFIX)
     return app
 
 app = create_app()

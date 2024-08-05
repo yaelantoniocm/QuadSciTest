@@ -4,6 +4,7 @@ from databases.models import Rockets, Launches, Starlink
 from config import DATABASE_URI
 
 from helpers.logger import logger
+
 # Create the database engine and session factory
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)

@@ -1,12 +1,11 @@
 from datetime import datetime  
-from flask import current_app, Flask
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from threading import Thread
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from databases.models import Rockets, Launches, Starlink, Base
+from databases.models import Rockets, Launches, Starlink
 from config import DATABASE_URI
 
 import os
@@ -14,7 +13,10 @@ import json
 import time
 
 # Functions from other files
-from backend.application.api import get_rockets, get_launches, get_starlink
+from backend.launches_resources.launches import get_launches
+from backend.rocket_resources.rockets import get_rockets
+from backend.starlink_resources.starlink import get_starlink
+
 from helpers.logger import logger
 
 def save_data(app):
