@@ -1,30 +1,50 @@
 app/
 │
 ├── backend/
-│ ├── api.py
+│ ├── application
+│     └── api.py
+│
+│ ├── dashboard
+│     └── dashboard.py
+│
+│ ├── launches_resources
+│     └── launches_filter_sort.py
+│
+│ ├── rocket_resources
+│     └── rocket_filter_sort.py
+│
+│ ├── spaceX
+│     └── spaceX_data.py
+│
+│ ├── starlink_resources
+│     └── starlink_filter_sort.py
+│
 │ └── storage.py
 │
 ├── helpers/
-│ └── logger.py
+│   └── query_filter_sort.py
 │
 ├── log/
-│ └── # Log files
+│   └── # Log files
 │
 ├── data/
 │ └── rockets/
-│ └── # JSONs with rockets information
+│     └── # JSONs with rockets information
 │ └── launches/
-│ └── # JSONs with launches information
+│     └── # JSONs with launches information
 │ └── starlink/
-│ └── # JSONs with Starlink satellite information
+│     └── # JSONs with Starlink satellite information
 │
+├── databases
+│     └── models.py # SQLAlchemy Models
+|
 ├── backup/
 │ └── rockets/
-│ └── # JSON with old rockets data
+│     └── # JSON with old rockets data
 │ └── launches/
-│ └── # JSON with old launches data
+│     └── # JSON with old launches data
 │ └── starlink/
-│ └── # JSON with old Starlink satellite data
+│     └── # JSON with old Starlink satellite data
 │
 ├── windows/
 │ ├── setup_database.bat # Script to configure the database on Windows
@@ -38,6 +58,5 @@ app/
 ├── app.py # Flask Core App
 ├── .env # File with the database credentials
 ├── config.py # Database configuration file
-├── models.py # SQLAlchemy Models
 ├── setup_database.py # Script to configure the database
 ├── requirements.txt # Python dependency file
