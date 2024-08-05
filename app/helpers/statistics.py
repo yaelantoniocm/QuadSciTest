@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, func
-from models import Rockets, Launches, Starlink
+from databases.models import Rockets, Launches, Starlink
 from config import DATABASE_URI
 
 from helpers.logger import logger
