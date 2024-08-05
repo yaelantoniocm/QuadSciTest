@@ -17,6 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from dashboard.views import home_view, dashboard_view
+from chart_generation import generate_charts
+
+# Call the function to generate charts
+generate_charts()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
