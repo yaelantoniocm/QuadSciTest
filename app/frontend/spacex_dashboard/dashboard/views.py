@@ -8,7 +8,7 @@ from matplotlib.ticker import MaxNLocator
 
 def generate_bar_chart(data):
     fig, ax = plt.subplots()
-    
+
     categories = ['Failed Launches', 'Successful Launches', 'Total Launches', 'Avg Launches Per Year']
     values = [
         data['failed_launches'],
@@ -16,13 +16,16 @@ def generate_bar_chart(data):
         data['total_launches'],
         data['avg_launches_per_year']
     ]
-    
+
     ax.bar(categories, values, color=['red', 'green', 'blue', 'orange'])
     ax.set_title('Launch Statistics')
     ax.set_xlabel('Categories')
     ax.set_ylabel('Count')
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))  # Ensure y-axis has integer ticks
-    
+
+    # Move the x-axis labels slightly to the right
+    ax.spines['left'].set_position(('outward', 10))
+
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
@@ -33,17 +36,17 @@ def generate_bar_chart(data):
 
 def generate_pie_chart(data):
     fig, ax = plt.subplots()
-    
+
     labels = ['Active Satellites', 'Decayed Satellites']
     sizes = [
         data['active_satellites'],
         data['decayed_satellites']
     ]
-    
+
     ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=['green', 'red'])
     ax.set_title('Starlink Satellite Statistics')
     ax.axis('equal')
-    
+
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
@@ -60,7 +63,7 @@ def dashboard_view(request):
     launch_table = LaunchTable([data['launches']])
     rocket_table = RocketTable([data['rockets']])
     starlink_table = StarlinkTable([data['starlink']])
-    
+
     # Generar gráficos
     bar_chart = generate_bar_chart(data['launches'])
     pie_chart = generate_pie_chart(data['starlink'])
@@ -74,6 +77,7 @@ def dashboard_view(request):
     }
 
     return render(request, 'dashboard.html', context)
+
 
 def home_view(request):
     return redirect('dashboard')

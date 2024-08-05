@@ -4,6 +4,9 @@
 <head>
     <title>SpaceX Dashboard</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
         table {
             width: 50%;
             margin: 20px auto;
@@ -28,12 +31,34 @@
         }
         .chart {
             width: 45%;
+            margin: 20px 0;
+        }
+        .legend-container {
+            display: flex;
+            justify-content: center;
+            margin-top: -10px;
+        }
+        .legend {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
     <h2>Launches Statistics</h2>
     {% render_table launch_table %}
+
+    <h2>Rockets Statistics</h2>
+    {% render_table rocket_table %}
+
+    <h2>Starlink Statistics</h2>
+    {% render_table starlink_table %}
 
     <div class="chart-container">
         <div class="chart">
@@ -45,11 +70,5 @@
             <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart">
         </div>
     </div>
-
-    <h2>Rockets Statistics</h2>
-    {% render_table rocket_table %}
-
-    <h2>Starlink Statistics</h2>
-    {% render_table starlink_table %}
 </body>
 </html>
