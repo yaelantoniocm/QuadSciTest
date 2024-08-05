@@ -1,10 +1,9 @@
 from flask import Flask
 from threading import Thread
 
-from backend.api import api
+from backend.application.api import api
 from backend.storage import start_scheduler
-from helpers.logger import logger
-from models import create_tables
+from databases.models import create_tables
 
 from config import DATABASE_URI
 

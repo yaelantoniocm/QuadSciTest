@@ -1,17 +1,20 @@
 # Dependencies
 from flask import Flask, jsonify, Blueprint, make_response, request, render_template_string
 import requests
+
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
-
 # Other classes
 from helpers.logger import logger
-from models import Rockets, Launches, Starlink
-from config import DATABASE_URI
 from helpers.statistics import get_rocket_statistics, get_launch_statistics, get_starlink_statistics
+from config import DATABASE_URI
 
-# Crear el motor de base de datos y la sesión
+from backend.starlink_resources.starlink_filter_sort import get_filter_sort_starlink
+from backend.rocket_resources.rocket_filter_sort import get_filter_sort_rocket
+from backend.launches_resources.launches_filter_sort import get_filter_sort_launches
+
+# Create the database engine and session
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
@@ -22,7 +25,7 @@ API_requests = "https://api.spacexdata.com/v4/"
 
 def get_data(endpoint: str):
     """
-    Function to get data from the API
+    Function to get data from the API SpaceX (here is raw data)
     """
     url = f"{API_requests}{endpoint}"
     try:
@@ -199,13 +202,57 @@ def get_starlink():
 @api.route('/rockets/<response_type>', methods=['GET'])
 def get_clear_rockets(response_type=None):
     """
-    Function to get the clear data of the rockets form postgreSQL data base
+    Endpoint to get rocket data with optional filtering and sorting.
+
+    Args:
+    response_type (string, optional (JSON or HTML)): Response type ('html' or 'json'). If not specified, returns JSON.
+
+    Returns:
+    JSON or HTML: Rocket data in the specified format.
+    
+    Examples of querys:
+    
+    api/rockets/json?filter_field=first_flight&filter_value=2020&sort_low=cost_per_launch
+    
+    api/rockets?filter_field=id&filter_value=5eb87cdcffd86e000604b32a
+    
+    api/rockets/html?filter_field=first_flight&filter_value=2010&sort_high=height_meters
+
+    Query format:
+    
+    api/rockets?filter_field={filter_field}&filter_value={possible_filter_value}&sort_low={sort_high / sort_low}
+    
+    api/rockets/{format}?filter_field={filter_field}&filter_value={possible_filter_value}&sort_low={sort_high / sort_low}
+    
+    Can sort any value except id and can filter any value.
+    
+    The format is json or html.
     """
     session = Session()
     logger.info("Accessed /rockets-clear endpoint")
+
     try:
-        rockets = session.query(Rockets).all()
-        logger.info("Getting the clear data of rockets")
+        # Get sorting and filtering parameters from the request
+        sort_param = request.args.get('sort_high') or request.args.get('sort_low')
+        sort_order = 'desc' if request.args.get('sort_high') else 'asc'
+        filter_field = request.args.get('filter_field')
+        filter_value = request.args.get('filter_value')
+        
+        # Validate that both filtering parameters are present
+        if (filter_field and not filter_value) or (not filter_field and filter_value):
+            logger.error("Both filter_field and filter_value must be provided for filtering.")
+            return jsonify({"error": "Both filter_field and filter_value must be provided for filtering."}), 400
+        
+        # Get rocket data by applying filtering and sorting if specified
+        rockets = get_filter_sort_rocket(session, sort_param, sort_order, filter_field, filter_value)
+        
+        # In case rockets with the filtering specifications are not found
+        if not rockets:
+            logger.error("No rockets found matching the specifications")
+            return jsonify({"message": "No rockets found matching the specifications"}), 404
+        
+        logger.info("Getting the processed data of rockets")
+        
         # Give the data in a HTML table format
         if response_type == 'html':
             logger.info("Returning data of rockets in HTML format")
@@ -213,7 +260,7 @@ def get_clear_rockets(response_type=None):
                 <html>
                 <head>
                     <style>
-                        table {
+                        table, h1 {
                             border-collapse: collapse;
                             width: 80%;
                             margin: auto;
@@ -229,6 +276,7 @@ def get_clear_rockets(response_type=None):
                     </style>
                 </head>
                 <body>
+                    <h1>Rockets</h1> <!-- Table title -->
                     <table>
                         <tr>
                             <th>ID</th>
@@ -264,10 +312,11 @@ def get_clear_rockets(response_type=None):
         elif response_type is None or response_type == 'json':
             logger.info("Returning data of rockets in JSON format.")
             return jsonify([rocket.to_dict() for rocket in rockets])
-        else:
-            logger.error("Not Found")
-            return jsonify(error="Invalid response type requested"), 400
+    except ValueError as v:
+        logger.error(f"ValueError in /rockets endpoint: {v}")
+        return jsonify({"error": str(v)}), 400
     except Exception as e:
+        logger.error(f"Error in /rockets endpoint: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
@@ -276,13 +325,56 @@ def get_clear_rockets(response_type=None):
 @api.route('/launches/<response_type>', methods=['GET'])
 def get_clear_launches(response_type=None):
     """
-    Function to get the clear data of the launches form postgreSQL data base
+    Endpoint to get launches data with optional filtering and sorting.
+
+    Args:
+    response_type (string, optional (JSON or HTML)): Response type ('html' or 'json'). If not specified, returns JSON.
+
+    Returns:
+    JSON or HTML: Rocket data in the specified format.
+    
+    Examples of querys:
+    
+    api/launches?filter_field=date_utc&filter_value=2022&sort_low=flight_number
+    
+    api/launches/json?filter_field=date_utc&filter_value=2020-05-24&sort_high=success
+    
+    api/launches/hmtl?sort_high=date_utc
+
+    Query format:
+    
+    api/launches?filter_field={filter_field}&filter_value={possible_filter_value}&sort_low={sort_high / sort_low}
+    
+    api/launches/{format}?filter_field={filter_field}&filter_value={possible_filter_value}&sort_low={sort_high / sort_low}
+    
+    Can sort any value except id and can filter any value.
+    
+    The format is json or html.
     """
     session = Session()
     logger.info("Accessed /launches-clear endpoint")
     try:
-        launches = session.query(Launches).all()
-        logger.info("Getting the clear data of launches")
+        # Get sorting and filtering parameters from the request
+        sort_param = request.args.get('sort_high') or request.args.get('sort_low')
+        sort_order = 'desc' if request.args.get('sort_high') else 'asc'
+        filter_field = request.args.get('filter_field')
+        filter_value = request.args.get('filter_value')
+        
+        # Validate that both filtering parameters are present
+        if (filter_field and not filter_value) or (not filter_field and filter_value):
+            logger.error("Both filter_field and filter_value must be provided for filtering.")
+            return jsonify({"error": "Both filter_field and filter_value must be provided for filtering."}), 400
+        
+        # Get launches data by applying filtering and sorting if specified
+        launches = get_filter_sort_launches(session, sort_param, sort_order, filter_field, filter_value)
+        
+        # In case launches with the filtering specifications are not found
+        if not launches:
+            logger.error("No launches found matching the specifications")
+            return jsonify({"message": "No launches found matching the specifications"}), 404
+        
+        logger.info("Getting the processed data of launches")
+        
         # Give the data in a HTML table format
         if response_type == 'html':
             logger.info("Returning data of launches in HTML format")
@@ -290,7 +382,7 @@ def get_clear_launches(response_type=None):
                 <html>
                 <head>
                     <style>
-                        table {
+                        table, h1 {
                             border-collapse: collapse;
                             width: 80%;
                             margin: auto;
@@ -306,6 +398,7 @@ def get_clear_launches(response_type=None):
                     </style>
                 </head>
                 <body>
+                    <h1>Launches</h1> <!-- Table title -->
                     <table>
                         <tr>
                             <th>ID</th>
@@ -331,27 +424,71 @@ def get_clear_launches(response_type=None):
             """, launches=launches)
         # Give the data in JSON format
         elif response_type is None or response_type == 'json':
-            logger.info("Returning data of launches in HTML format")
+            logger.info("Returning data of launches in JSON format")
             return jsonify([launch.to_dict() for launch in launches])
-        else:
-            logger.error("Not Found")
-            return jsonify(error="Invalid response type requested"), 400
+    except ValueError as v:
+        logger.error(f"ValueError in /launches endpoint: {v}")
+        return jsonify({"error": str(v)}), 400
     except Exception as e:
+        logger.error(f"Error in /launches endpoint: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
 
 @api.route('/starlink', methods=['GET'])
 @api.route('/starlink/<response_type>', methods=['GET'])
-def get__clear_starlink(response_type=None):
+def get_clear_starlink(response_type=None):
     """
-    Function to get the clear data of the starlink satellites form postgreSQL data base
+    Endpoint to get starlink data with optional filtering and sorting.
+
+    Args:
+    response_type (string, optional (JSON or HTML)): Response type ('html' or 'json'). If not specified, returns JSON.
+
+    Returns:
+    JSON or HTML: Rocket data in the specified format.
+    
+    Examples of querys:
+    
+    api/starlink?filter_field=launch_date&filter_value=2022&sort_low=inclination
+    
+    api/starlink/json?filter_field=launch_date&filter_value=2020-02-17&sort_high=periapsis
+    
+    api/starlink/html?sort_low=mass_kg
+
+    Query format:
+    
+    api/starlink?filter_field={filter_field}&filter_value={possible_filter_value}&sort_low={sort_high / sort_low}
+    
+    api/starlink/{format}?filter_field={filter_field}&filter_value={possible_filter_value}&sort_low={sort_high / sort_low}
+    
+    Can sort any value except id and can filter any value.
+    
+    The format is json or html.
     """
     session = Session()
     logger.info("Accessed /starlink-clear endpoint")
     try:
-        starlink = session.query(Starlink).all()
-        logger.info("Getting the clear data of starlink")
+        # Get sorting and filtering parameters from the request
+        sort_param = request.args.get('sort_high') or request.args.get('sort_low')
+        sort_order = 'desc' if request.args.get('sort_high') else 'asc'
+        filter_field = request.args.get('filter_field')
+        filter_value = request.args.get('filter_value')
+        
+        # Validate that both filtering parameters are present
+        if (filter_field and not filter_value) or (not filter_field and filter_value):
+            logger.error("Both filter_field and filter_value must be provided for filtering.")
+            return jsonify({"error": "Both filter_field and filter_value must be provided for filtering."}), 400
+        
+        # Get rocket data by applying filtering and sorting if specified
+        starlinks = get_filter_sort_starlink(session, sort_param, sort_order, filter_field, filter_value)
+        
+        # In case rockets with the filtering specifications are not found
+        if not starlinks:
+            logger.error("No starlinks found matching the specifications")
+            return jsonify({"message": "No starlinks found matching the specifications"}), 404
+        
+        logger.info("Getting the processed data of rockets")
+        
         # Give the data in a HTML table format
         if response_type == 'html':
             logger.info("Returning data of starlink in HTML format")
@@ -359,7 +496,7 @@ def get__clear_starlink(response_type=None):
                 <html>
                 <head>
                     <style>
-                        table {
+                        table, h1 {
                             border-collapse: collapse;
                             width: 80%;
                             margin: auto;
@@ -375,6 +512,7 @@ def get__clear_starlink(response_type=None):
                     </style>
                 </head>
                 <body>
+                    <h1>Launches</h1> <!-- Table title -->
                     <table>
                         <tr>
                             <th>ID</th>
@@ -401,15 +539,16 @@ def get__clear_starlink(response_type=None):
                     </table>
                 </body>
                 </html>
-            """, starlink=starlink)
+            """, starlink=starlinks)
         # Give the data in JSON format
         elif response_type is None or response_type == 'json':
             logger.info("Returning data of starlink in JSON format")
-            return jsonify([s.to_dict() for s in starlink])
-        else:
-            logger.error("Not Found")
-            return jsonify(error="Invalid response type requested"), 400
+            return jsonify([s.to_dict() for s in starlinks])
+    except ValueError as ve:
+        logger.error(f"ValueError in /starlink endpoint: {ve}")
+        return jsonify({"error": str(ve)}), 400
     except Exception as e:
+        logger.error(f"Error in /starlink endpoint: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()

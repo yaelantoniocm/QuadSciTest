@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from threading import Thread
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from models import Rockets, Launches, Starlink, Base
+from databases.models import Rockets, Launches, Starlink, Base
 from config import DATABASE_URI
 
 import os
@@ -14,7 +14,7 @@ import json
 import time
 
 # Functions from other files
-from backend.api import get_rockets, get_launches, get_starlink
+from backend.application.api import get_rockets, get_launches, get_starlink
 from helpers.logger import logger
 
 def save_data(app):
