@@ -17,14 +17,34 @@
         th {
             background-color: #f4f4f4;
         }
-        h2 {
+        h2, h3 {
             text-align: center;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px auto;
+            width: 80%;
+        }
+        .chart {
+            width: 45%;
         }
     </style>
 </head>
 <body>
     <h2>Launches Statistics</h2>
     {% render_table launch_table %}
+
+    <div class="chart-container">
+        <div class="chart">
+            <h3>Launch Statistics</h3>
+            <img src="data:image/png;base64,{{ bar_chart }}" alt="Bar Chart">
+        </div>
+        <div class="chart">
+            <h3>Starlink Satellite Statistics</h3>
+            <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart">
+        </div>
+    </div>
 
     <h2>Rockets Statistics</h2>
     {% render_table rocket_table %}

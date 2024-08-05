@@ -13,4 +13,5 @@ django==5.0.7
 django-plotly-dash==2.3.1
 dash==2.9.3
 django-tables2==2.7.0
+matplotlib==3.9.0
 
