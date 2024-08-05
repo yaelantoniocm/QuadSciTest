@@ -1,0 +1,35 @@
+{% load render_table from django_tables2 %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SpaceX Dashboard</title>
+    <style>
+        table {
+            width: 50%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>Launches Statistics</h2>
+    {% render_table launch_table %}
+
+    <h2>Rockets Statistics</h2>
+    {% render_table rocket_table %}
+
+    <h2>Starlink Statistics</h2>
+    {% render_table starlink_table %}
+</body>
+</html>
